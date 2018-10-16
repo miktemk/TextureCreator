@@ -10,6 +10,7 @@ import javax.swing.undo.*;
 import javax.swing.border.*;
 import java.io.*;
 import javax.imageio.*;
+import javax.imageio.stream.ImageOutputStream;
 
 import editor.ExtFilter;
 import editor.*;
@@ -128,7 +129,7 @@ public class TextureCreator extends JFrame
                 }
                 try
                 {
-                    ImageIO.write(man.getImageToSave(), ext, currentFile);
+                	saveCurImageFile();
                     return EXIT_OK;
                 }
                 catch(Exception ex)
@@ -147,7 +148,7 @@ public class TextureCreator extends JFrame
         {
             try
             {
-                ImageIO.write(man.getImageToSave(), ext, currentFile);
+            	saveCurImageFile();
                 return EXIT_OK;
             }
             catch(Exception ex)
@@ -157,7 +158,22 @@ public class TextureCreator extends JFrame
             }
         }
     }
-    public void exitProgram()
+    
+    private void saveCurImageFile() throws IOException
+    {
+    	ImageIO.write(man.getImageToSave(), ext, currentFile);
+    	
+    	// LINK: https://stackoverflow.com/questions/17015197/quality-loss-using-imageio-write
+    	ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+    	ImageWriteParam param = writer.getDefaultWriteParam();
+    	param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT); // Needed see javadoc
+    	param.setCompressionQuality(1.0F); // Highest quality
+    	ImageOutputStream ioStream = ImageIO.createImageOutputStream(currentFile);
+    	writer.setOutput(ioStream);
+    	writer.write(man.getImageToSave());
+	}
+    
+	public void exitProgram()
     {
         if(!man.isSaved())
         {
